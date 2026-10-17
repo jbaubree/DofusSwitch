@@ -31,15 +31,26 @@ public struct TrackedWindow: Equatable, Identifiable {
         return collapsed
     }
 
-    /// Removes a trailing " - <digits>..." segment produced by Dofus Unity version suffixes.
+    /// Strips Dofus Unity's trailing version and build-type segments.
+    /// e.g. "Minak - Sacrieur - 3.7.11.11 - Release" → "Minak - Sacrieur".
+    /// Repeatedly drops the last `" - "`-separated segment while it starts with a
+    /// digit (version) or matches a known build-type keyword (release/debug/beta/…).
     public static func stripVersionSuffix(from title: String) -> String {
-        let parts = title.components(separatedBy: " - ")
-        guard parts.count >= 2,
-              let last = parts.last,
-              let first = last.first,
-              first.isNumber
-        else { return title }
-        return parts.dropLast().joined(separator: " - ")
+        let buildKeywords: Set<String> = ["release", "debug", "beta", "development", "staging", "preview"]
+        var parts = title.components(separatedBy: " - ")
+        while parts.count > 1, let last = parts.last {
+            if let first = last.first, first.isNumber {
+                parts.removeLast()
+                continue
+            }
+            let normalized = last.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            if buildKeywords.contains(normalized) {
+                parts.removeLast()
+                continue
+            }
+            break
+        }
+        return parts.joined(separator: " - ")
     }
 
     public static func == (lhs: TrackedWindow, rhs: TrackedWindow) -> Bool {

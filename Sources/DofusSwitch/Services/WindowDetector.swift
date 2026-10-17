@@ -61,7 +61,8 @@ public final class WindowDetector {
             var titleRef: AnyObject?
             guard AXUIElementCopyAttributeValue(axWindow, kAXTitleAttribute as CFString, &titleRef) == .success,
                   let title = titleRef as? String,
-                  !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                  !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  Self.looksLikeCharacterWindow(title: title)
             else { return nil }
             return TrackedWindow(
                 title: title,
@@ -69,6 +70,17 @@ public final class WindowDetector {
                 axElementRef: axWindow as AnyObject
             )
         }
+    }
+
+    /// Dofus Unity's launcher window carries a title like "Dofus 3.7.11.11 - Release"
+    /// (no character name). Character windows look like "Perso - Classe - version - build".
+    /// We treat anything whose first segment starts with "Dofus " (space + anything)
+    /// as non-character and exclude it.
+    private static func looksLikeCharacterWindow(title: String) -> Bool {
+        let first = title.components(separatedBy: " - ").first ?? title
+        let lower = first.lowercased()
+        if lower == "dofus" || lower.hasPrefix("dofus ") { return false }
+        return true
     }
 
     // MARK: - AX observers per app

@@ -31,6 +31,27 @@ final class TrackedWindowTests: XCTestCase {
         XCTAssertEqual(TrackedWindow.stripVersionSuffix(from: "Myrdak - 3.7.11.6"), "Myrdak")
     }
 
+    func test_stripVersionSuffix_dropsVersionAndReleaseTrailer() {
+        XCTAssertEqual(
+            TrackedWindow.stripVersionSuffix(from: "Minak - Sacrieur - 3.7.11.11 - Release"),
+            "Minak - Sacrieur"
+        )
+    }
+
+    func test_stripVersionSuffix_dropsBuildKeywordAlone() {
+        XCTAssertEqual(
+            TrackedWindow.stripVersionSuffix(from: "Myrdak - Iop - Debug"),
+            "Myrdak - Iop"
+        )
+    }
+
+    func test_stripVersionSuffix_releaseKeywordIsCaseInsensitive() {
+        XCTAssertEqual(
+            TrackedWindow.stripVersionSuffix(from: "Myrdak - Iop - release"),
+            "Myrdak - Iop"
+        )
+    }
+
     func test_displayTitle_matchesStripped() {
         let w = TrackedWindow(title: "Myrdak - Iop - 3.7.11.6", pid: 1)
         XCTAssertEqual(w.displayTitle, "Myrdak - Iop")
