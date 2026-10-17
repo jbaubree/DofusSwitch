@@ -23,3 +23,8 @@ Carthage/Build/
 # IDE
 .idea/
 .vscode/
+
+# XcodeGen output
+DofusSwitch.xcodeproj/
+Info.plist
+DofusSwitchCore-Info.plist

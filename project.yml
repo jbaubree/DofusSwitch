@@ -1,0 +1,69 @@
+name: DofusSwitch
+options:
+  bundleIdPrefix: com.jbaubree
+  deploymentTarget:
+    macOS: "13.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    ENABLE_HARDENED_RUNTIME: NO
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    DEVELOPMENT_TEAM: ""
+targets:
+  DofusSwitchCore:
+    type: framework
+    platform: macOS
+    sources:
+      - Sources/DofusSwitchCore
+    info:
+      path: DofusSwitchCore-Info.plist
+      properties:
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jbaubree.DofusSwitchCore
+        SKIP_INSTALL: YES
+        DEFINES_MODULE: YES
+  DofusSwitch:
+    type: application
+    platform: macOS
+    sources:
+      - Sources/DofusSwitch
+    info:
+      path: Info.plist
+      properties:
+        LSUIElement: true
+        NSHumanReadableCopyright: ""
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+    dependencies:
+      - target: DofusSwitchCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jbaubree.DofusSwitch
+  DofusSwitchCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests/DofusSwitchCoreTests
+    dependencies:
+      - target: DofusSwitchCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jbaubree.DofusSwitchCoreTests
+schemes:
+  DofusSwitch:
+    build:
+      targets:
+        DofusSwitch: all
+        DofusSwitchCore: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - DofusSwitchCoreTests
