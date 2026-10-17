@@ -1,13 +1,14 @@
 import AppKit
 import SwiftUI
 
-final class MenuBarController {
+final class MenuBarController: NSObject {
     private let statusItem: NSStatusItem
     private let popover: NSPopover
 
     init(rootView: AnyView) {
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         self.popover = NSPopover()
+        super.init()
         popover.behavior = .transient
         popover.contentSize = NSSize(width: 280, height: 360)
         popover.contentViewController = NSHostingController(rootView: rootView)
