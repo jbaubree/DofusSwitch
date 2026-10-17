@@ -22,9 +22,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // Prompt for Accessibility on first launch (non-blocking).
         _ = AccessibilityPermission.isTrusted(prompt: true)
 
-        // Detector → store
+        // Detector → store (+ refresh menu bar icon when Dofus launches/quits)
         detector.onUpdate = { [weak self] windows in
             self?.windowStore.update(detected: windows)
+            self?.menuBar?.refreshIcon()
         }
         detector.scanNow()
 

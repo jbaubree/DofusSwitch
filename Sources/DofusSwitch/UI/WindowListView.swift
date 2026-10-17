@@ -1,4 +1,5 @@
 // Sources/DofusSwitch/UI/WindowListView.swift
+import AppKit
 import SwiftUI
 import DofusSwitchCore
 
@@ -21,8 +22,7 @@ struct WindowListView: View {
             List {
                 ForEach(store.visibleWindows) { window in
                     HStack(spacing: 8) {
-                        Image(systemName: "gamecontroller")
-                            .foregroundStyle(.secondary)
+                        iconFor(pid: window.pid)
                         Text(window.displayTitle).lineLimit(1)
                         Spacer()
                         if window.normalizedKey == currentWindowKey {
@@ -37,6 +37,18 @@ struct WindowListView: View {
                 }
             }
             .listStyle(.inset)
+        }
+    }
+
+    @ViewBuilder
+    private func iconFor(pid: pid_t) -> some View {
+        if let app = NSRunningApplication(processIdentifier: pid), let icon = app.icon {
+            Image(nsImage: icon)
+                .resizable()
+                .frame(width: 16, height: 16)
+        } else {
+            Image(systemName: "gamecontroller")
+                .foregroundStyle(.secondary)
         }
     }
 }
