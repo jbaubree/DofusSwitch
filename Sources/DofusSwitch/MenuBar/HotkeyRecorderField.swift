@@ -43,15 +43,13 @@ final class RecorderNSView: NSView {
 
     override func keyDown(with event: NSEvent) {
         guard capturing else { super.keyDown(with: event); return }
-        // Require at least one modifier.
-        let flags = event.modifierFlags.rawValue
-        let hasModifier =
-            flags & NSEvent.ModifierFlags.command.rawValue != 0 ||
-            flags & NSEvent.ModifierFlags.option.rawValue  != 0 ||
-            flags & NSEvent.ModifierFlags.control.rawValue != 0 ||
-            flags & NSEvent.ModifierFlags.shift.rawValue   != 0
-        guard hasModifier else { NSSound.beep(); return }
-        onCapture?(event.keyCode, flags)
+        // Escape cancels capture without binding anything.
+        if event.keyCode == 0x35 {
+            capturing = false
+            needsDisplay = true
+            return
+        }
+        onCapture?(event.keyCode, event.modifierFlags.rawValue)
         capturing = false
         needsDisplay = true
     }
@@ -61,7 +59,7 @@ final class RecorderNSView: NSView {
         bg.setFill()
         NSBezierPath(roundedRect: bounds, xRadius: 4, yRadius: 4).fill()
 
-        let text = capturing ? "Appuyez sur une combinaison…" : prettyPrint(binding)
+        let text = capturing ? "Appuyez sur une touche… (Esc annule)" : prettyPrint(binding)
         let attrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 12),
             .foregroundColor: NSColor.labelColor
