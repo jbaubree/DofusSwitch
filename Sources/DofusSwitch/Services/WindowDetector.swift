@@ -5,8 +5,7 @@ import DofusSwitchCore
 public final class WindowDetector {
     public var onUpdate: (([TrackedWindow]) -> Void)?
 
-    // TODO: verify at runtime with real Dofus Unity client (Task 17 smoke test).
-    private let dofusBundleId = "com.ankama.dofus"
+    private let dofusBundleId = "com.Ankama.Dofus"
 
     private var observers: [pid_t: AXObserver] = [:]
     private var pollTimer: Timer?
