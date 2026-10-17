@@ -1,22 +1,24 @@
 # DofusSwitch
 
-Minimalist macOS menu-bar app to cycle focus between Dofus Unity windows via global hotkeys.
+Petite app macOS dans la barre de menus pour switcher entre tes fenêtres Dofus Unity avec un raccourci clavier global. Zéro bloat : pas de gestion de comptes, pas de tiling, pas de télémétrie.
 
-## Features
+## Fonctionnalités
 
-- Auto-detect running Dofus Unity instances
-- Two global hotkeys: next / previous window (defaults: `⌃⌥→` / `⌃⌥←`)
-- Reorderable list in a menu-bar popover (drag-and-drop)
-- Launch at login
-- Zero network, zero telemetry, no screen recording required
+- Détection automatique des clients Dofus Unity qui tournent
+- Deux raccourcis globaux configurables : fenêtre suivante / précédente (défauts : `⌃⌥→` / `⌃⌥←`)
+- Toggle on/off des raccourcis depuis les settings
+- Liste réordonnable dans le popover (drag-and-drop)
+- Démarrage au login
+- Icône Dofus récupérée dynamiquement depuis le bundle installé par Zaap
+- Pas de réseau, pas de télémétrie, pas d'enregistrement d'écran requis
 
-## Requirements
+## Prérequis
 
-- macOS 13 (Ventura) or later
-- Xcode 15+ and `xcodegen` to build (`brew install xcodegen`)
-- Accessibility permission (granted at first launch)
+- macOS 13 (Ventura) ou plus
+- Xcode 15+ et `xcodegen` pour builder (`brew install xcodegen`)
+- Permission Accessibilité (demandée au premier lancement)
 
-## Build & run
+## Build & lancement
 
 ```bash
 xcodegen generate
@@ -24,35 +26,61 @@ xcodebuild -scheme DofusSwitch -configuration Debug build
 open ~/Library/Developer/Xcode/DerivedData/DofusSwitch-*/Build/Products/Debug/DofusSwitch.app
 ```
 
-## Smoke test
+Au premier lancement macOS peut bloquer l'app (signée ad-hoc) : clic droit sur `DofusSwitch.app` → **Ouvrir** → **Ouvrir** dans la confirmation.
 
-1. Launch at least 2 Dofus Unity clients.
-2. Click the menu-bar icon → both appear in the list.
-3. `⌃⌥→` cycles forward, `⌃⌥←` cycles backward.
-4. Drag a row to reorder.
-5. Close an instance → disappears from the list within ~2 seconds.
+## Permission Accessibilité
 
-## First-run bundle ID discovery
+Au premier lancement un écran "Autorisation requise" apparaît dans le popover. Clique **Ouvrir Réglages Système** → active le toggle **DofusSwitch** dans *Confidentialité et sécurité* → *Accessibilité* → reviens sur le popover et clique **Revérifier**.
 
-The app assumes Dofus Unity's bundle identifier is `com.ankama.dofus`. If
-the window list stays empty while a Dofus Unity client is running:
+Si tu rebuild l'app et que l'autorisation ne tient plus (classique avec les signatures ad-hoc qui changent à chaque build) :
 
 ```bash
-osascript -e 'tell application "System Events" to get bundle identifier of every process whose name contains "Dofus"'
+pkill -f DofusSwitch
+tccutil reset Accessibility com.jbaubree.DofusSwitch
+open ~/Library/Developer/Xcode/DerivedData/DofusSwitch-*/Build/Products/Debug/DofusSwitch.app
 ```
 
-Copy the printed bundle id and update the constant in
-`Sources/DofusSwitch/Services/WindowDetector.swift` (`dofusBundleId`),
-then rebuild.
+## Utilisation rapide
 
-## Known limitations
+1. Lance au moins 2 clients Dofus Unity.
+2. Clique sur l'icône Dofus dans la barre de menus → tes personnages apparaissent (format `Perso - Classe`).
+3. `⌃⌥→` passe au suivant, `⌃⌥←` au précédent (modifiables dans Settings).
+4. Glisse une ligne pour réordonner — l'ordre est persisté entre les lancements.
+5. Ferme un client → il disparaît de la liste en ~2 secondes.
 
-- Dofus Unity only. No Rétro, no Experimental.
-- Persistence of order uses the window title as key. If Dofus does not expose the character name in its window title, the order will not survive relaunches.
-- Ad-hoc signed. First launch requires right-click → Open to bypass Gatekeeper.
+### Personnaliser les raccourcis
 
-## Non-goals
+Clique sur l'engrenage → clique sur le champ d'un raccourci → appuie sur la combinaison voulue (ou une touche seule — Échap annule). Un switch en haut permet de désactiver complètement les raccourcis sans les désassigner.
 
-- No input broadcasting (forbidden by Ankama).
-- No automation of gameplay.
-- No reading of game memory.
+**Attention aux raccourcis sans modifier :** une touche nue (ex: flèche droite seule) est globale et sera interceptée dans toutes les apps, pas juste Dofus.
+
+## Limitations connues
+
+- **Dofus Unity uniquement.** Pas de support Dofus Rétro ni Experimental.
+- **Persistance de l'ordre.** La clé est basée sur le titre nettoyé de la fenêtre (`Perso - Classe`). Si Dofus change le format des titres dans une mise à jour, l'ordre peut être réinitialisé.
+- **Signature ad-hoc.** Pas de Developer ID. Gatekeeper demande une confirmation au premier lancement et la permission Accessibilité est à redonner après chaque rebuild.
+- **Fenêtre launcher ignorée.** Celle intitulée `Dofus x.y.z - Release` est exclue de la liste (ce n'est pas un personnage).
+
+## Non-objectifs
+
+- **Pas de broadcast d'inputs.** Interdit par Ankama. L'app ne fait que focaliser des fenêtres.
+- **Pas d'automatisation du gameplay.** Zéro simulation de clic ou de touche à destination du jeu.
+- **Pas de lecture mémoire.** L'app ne touche jamais aux process Dofus autrement que via l'API publique Accessibility pour lister et focaliser leurs fenêtres.
+
+## Architecture
+
+Deux targets :
+
+- **DofusSwitchCore** (framework) — logique métier testable : `TrackedWindow`, `HotkeyBinding`, `Preferences`, `WindowStore` (fusion détecté × ordre persisté avec entrées fantômes), `CycleController`.
+- **DofusSwitch** (application) — glue AppKit/SwiftUI :
+  - `WindowDetector` : AX API + `NSWorkspace` + `AXObserver` + poll de secours à 2s
+  - `HotkeyManager` : Carbon `RegisterEventHotKey`
+  - `FocusService` : `kAXMainAttribute` + `kAXRaiseAction` + `NSRunningApplication.activate`
+  - `LaunchAtLoginService` : `SMAppService.mainApp`
+  - UI SwiftUI dans un `NSPopover` attaché à un `NSStatusItem`
+
+30 tests XCTest sur la Core. Les services système ne sont pas testés automatiquement (nécessitent Dofus qui tourne et un accès au focus système).
+
+## Licence
+
+MIT.
