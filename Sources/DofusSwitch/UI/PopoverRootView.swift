@@ -50,7 +50,7 @@ struct PopoverRootView: View {
                 .buttonStyle(.borderless)
                 Text("Settings").font(.system(size: 13, weight: .semibold))
             } else {
-                Text("Dofus windows").font(.system(size: 13, weight: .semibold))
+                Text("DofusSwitch").font(.system(size: 13, weight: .semibold))
             }
             Spacer()
             Button(action: { showSettings.toggle() }) {
