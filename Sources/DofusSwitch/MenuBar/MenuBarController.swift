@@ -1,0 +1,32 @@
+import AppKit
+import SwiftUI
+
+final class MenuBarController {
+    private let statusItem: NSStatusItem
+    private let popover: NSPopover
+
+    init(rootView: AnyView) {
+        self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        self.popover = NSPopover()
+        popover.behavior = .transient
+        popover.contentSize = NSSize(width: 280, height: 360)
+        popover.contentViewController = NSHostingController(rootView: rootView)
+
+        if let button = statusItem.button {
+            button.image = NSImage(systemSymbolName: "square.grid.3x1.below.line.grid.1x2",
+                                   accessibilityDescription: "DofusSwitch")
+            button.target = self
+            button.action = #selector(togglePopover(_:))
+        }
+    }
+
+    @objc private func togglePopover(_ sender: Any?) {
+        guard let button = statusItem.button else { return }
+        if popover.isShown {
+            popover.performClose(sender)
+        } else {
+            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            popover.contentViewController?.view.window?.makeKey()
+        }
+    }
+}
