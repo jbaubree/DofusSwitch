@@ -29,6 +29,11 @@ public final class HotkeyManager {
         register(id: .prev, binding: prev)
     }
 
+    public func unregisterAll() {
+        unregister(.next)
+        unregister(.prev)
+    }
+
     private func register(id: HotkeyID, binding: HotkeyBinding) {
         var hotKeyID = EventHotKeyID(signature: OSType(0x44535748 /* 'DSWH' */), id: id.rawValue)
         var ref: EventHotKeyRef?

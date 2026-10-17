@@ -11,6 +11,7 @@ struct PopoverRootView: View {
     @Binding var nextHotkey: HotkeyBinding
     @Binding var prevHotkey: HotkeyBinding
     @Binding var launchAtLogin: Bool
+    @Binding var hotkeysEnabled: Bool
     let onReset: () -> Void
     let onQuit: () -> Void
 
@@ -28,6 +29,7 @@ struct PopoverRootView: View {
                     nextHotkey: $nextHotkey,
                     prevHotkey: $prevHotkey,
                     launchAtLogin: $launchAtLogin,
+                    hotkeysEnabled: $hotkeysEnabled,
                     onReset: onReset
                 )
             } else {

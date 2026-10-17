@@ -23,7 +23,7 @@ struct WindowListView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "gamecontroller")
                             .foregroundStyle(.secondary)
-                        Text(window.title).lineLimit(1)
+                        Text(window.displayTitle).lineLimit(1)
                         Spacer()
                         if window.normalizedKey == currentWindowKey {
                             Image(systemName: "dot.circle.fill")

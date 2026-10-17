@@ -35,4 +35,25 @@ final class PreferencesTests: XCTestCase {
         defaults.set(Data([0xFF, 0xFF]), forKey: PreferencesStore.storageKey)
         XCTAssertEqual(store.load(), .defaults)
     }
+
+    func test_defaults_haveHotkeysEnabled() {
+        XCTAssertTrue(Preferences.defaults.hotkeysEnabled)
+    }
+
+    func test_load_defaultsHotkeysEnabledToTrueWhenMissingFromStoredData() throws {
+        let (store, defaults) = makeStore()
+        // Encode a legacy payload with no hotkeysEnabled key.
+        let legacy: [String: Any] = [
+            "nextHotkey": ["keyCode": 0x7C, "carbonModifiers": 0],
+            "prevHotkey": ["keyCode": 0x7B, "carbonModifiers": 0],
+            "windowOrder": ["perso1"],
+            "launchAtLogin": false
+        ]
+        let data = try JSONSerialization.data(withJSONObject: legacy)
+        defaults.set(data, forKey: PreferencesStore.storageKey)
+
+        let loaded = store.load()
+        XCTAssertTrue(loaded.hotkeysEnabled)
+        XCTAssertEqual(loaded.windowOrder, ["perso1"])
+    }
 }

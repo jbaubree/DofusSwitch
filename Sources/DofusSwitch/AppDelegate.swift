@@ -38,7 +38,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
             if let t = target { self.focusService.focus(t) }
         }
-        hotkeyManager.rebind(next: prefs.nextHotkey, prev: prefs.prevHotkey)
+        applyHotkeyState()
 
         // Menu bar
         let root = PopoverRootView(
@@ -60,6 +60,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 get: { self.prefs.launchAtLogin },
                 set: { self.updateLaunchAtLogin($0) }
             ),
+            hotkeysEnabled: Binding(
+                get: { self.prefs.hotkeysEnabled },
+                set: { self.updateHotkeysEnabled($0) }
+            ),
             onReset: { [weak self] in self?.resetToDefaults() },
             onQuit: { NSApp.terminate(nil) }
         )
@@ -71,13 +75,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private func updateNextHotkey(_ b: HotkeyBinding) {
         prefs.nextHotkey = b
         preferencesStore.save(prefs)
-        hotkeyManager.rebind(next: prefs.nextHotkey, prev: prefs.prevHotkey)
+        applyHotkeyState()
     }
 
     private func updatePrevHotkey(_ b: HotkeyBinding) {
         prefs.prevHotkey = b
         preferencesStore.save(prefs)
-        hotkeyManager.rebind(next: prefs.nextHotkey, prev: prefs.prevHotkey)
+        applyHotkeyState()
     }
 
     private func updateLaunchAtLogin(_ enabled: Bool) {
@@ -86,10 +90,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         launchAtLogin.set(enabled: enabled)
     }
 
+    private func updateHotkeysEnabled(_ enabled: Bool) {
+        prefs.hotkeysEnabled = enabled
+        preferencesStore.save(prefs)
+        applyHotkeyState()
+    }
+
     private func resetToDefaults() {
         prefs = .defaults
         preferencesStore.save(prefs)
-        hotkeyManager.rebind(next: prefs.nextHotkey, prev: prefs.prevHotkey)
+        applyHotkeyState()
         launchAtLogin.set(enabled: prefs.launchAtLogin)
+    }
+
+    private func applyHotkeyState() {
+        if prefs.hotkeysEnabled {
+            hotkeyManager.rebind(next: prefs.nextHotkey, prev: prefs.prevHotkey)
+        } else {
+            hotkeyManager.unregisterAll()
+        }
     }
 }

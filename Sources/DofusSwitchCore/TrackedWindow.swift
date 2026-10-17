@@ -13,8 +13,13 @@ public struct TrackedWindow: Equatable, Identifiable {
         self.axElementRef = axElementRef
     }
 
+    /// Title with any trailing version segment stripped (e.g. "Myrdak - Iop - 3.7.11.6" → "Myrdak - Iop").
+    public var displayTitle: String {
+        Self.stripVersionSuffix(from: title)
+    }
+
     public var normalizedKey: String {
-        Self.normalizedKey(from: title)
+        Self.normalizedKey(from: displayTitle)
     }
 
     public static func normalizedKey(from title: String) -> String {
@@ -24,6 +29,17 @@ public struct TrackedWindow: Equatable, Identifiable {
             .split(whereSeparator: { $0.isWhitespace })
             .joined(separator: " ")
         return collapsed
+    }
+
+    /// Removes a trailing " - <digits>..." segment produced by Dofus Unity version suffixes.
+    public static func stripVersionSuffix(from title: String) -> String {
+        let parts = title.components(separatedBy: " - ")
+        guard parts.count >= 2,
+              let last = parts.last,
+              let first = last.first,
+              first.isNumber
+        else { return title }
+        return parts.dropLast().joined(separator: " - ")
     }
 
     public static func == (lhs: TrackedWindow, rhs: TrackedWindow) -> Bool {
