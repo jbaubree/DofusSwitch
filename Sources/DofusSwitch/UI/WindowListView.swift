@@ -22,6 +22,9 @@ struct WindowListView: View {
             List {
                 ForEach(store.visibleWindows) { window in
                     HStack(spacing: 8) {
+                        Image(systemName: "line.3.horizontal")
+                            .foregroundStyle(.tertiary)
+                            .frame(width: 16, height: 16)
                         iconFor(pid: window.pid)
                         Text(window.displayTitle).lineLimit(1)
                         Spacer()
