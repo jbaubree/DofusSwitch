@@ -8,6 +8,7 @@ struct PopoverRootView: View {
     @State private var axGranted: Bool = AccessibilityPermission.isTrusted(prompt: false)
 
     let currentWindowKey: () -> String?
+    let sessionCount: () -> Int
     @Binding var nextHotkey: HotkeyBinding
     @Binding var prevHotkey: HotkeyBinding
     @Binding var launchAtLogin: Bool
@@ -30,6 +31,7 @@ struct PopoverRootView: View {
                     prevHotkey: $prevHotkey,
                     launchAtLogin: $launchAtLogin,
                     hotkeysEnabled: $hotkeysEnabled,
+                    sessionCount: sessionCount(),
                     onReset: onReset
                 )
             } else {

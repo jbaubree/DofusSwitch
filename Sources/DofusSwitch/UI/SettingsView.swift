@@ -7,6 +7,7 @@ struct SettingsView: View {
     @Binding var prevHotkey: HotkeyBinding
     @Binding var launchAtLogin: Bool
     @Binding var hotkeysEnabled: Bool
+    let sessionCount: Int
     var onReset: () -> Void
 
     var body: some View {

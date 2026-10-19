@@ -52,6 +52,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 return self.cycleController.currentIndex(in: self.windowStore.visibleWindows)
                     .flatMap { self.windowStore.visibleWindows[$0].normalizedKey }
             },
+            sessionCount: { [weak self] in
+                self?.windowStore.visibleWindows.count ?? 0
+            },
             nextHotkey: Binding(
                 get: { self.prefs.nextHotkey },
                 set: { self.updateNextHotkey($0) }
