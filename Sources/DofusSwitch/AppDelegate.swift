@@ -22,10 +22,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // Prompt for Accessibility on first launch (non-blocking).
         _ = AccessibilityPermission.isTrusted(prompt: true)
 
-        // Detector → store (+ refresh menu bar icon when Dofus launches/quits)
+        // Detector → store (+ refresh menu bar icon when Dofus launches/quits,
+        // + re-evaluate hotkey registration when the session count changes).
         detector.onUpdate = { [weak self] windows in
-            self?.windowStore.update(detected: windows)
-            self?.menuBar?.refreshIcon()
+            guard let self else { return }
+            self.windowStore.update(detected: windows)
+            self.menuBar?.refreshIcon()
+            self.applyHotkeyState()
         }
         detector.scanNow()
 
@@ -105,7 +108,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
 
     private func applyHotkeyState() {
-        if prefs.hotkeysEnabled {
+        let effective = shouldEnableHotkeys(
+            preferredEnabled: prefs.hotkeysEnabled,
+            sessionCount: windowStore.visibleWindows.count
+        )
+        if effective {
             hotkeyManager.rebind(next: prefs.nextHotkey, prev: prefs.prevHotkey)
         } else {
             hotkeyManager.unregisterAll()
