@@ -10,6 +10,14 @@ struct SettingsView: View {
     let sessionCount: Int
     var onReset: () -> Void
 
+    private var effectivelyEnabled: Bool {
+        shouldEnableHotkeys(preferredEnabled: hotkeysEnabled, sessionCount: sessionCount)
+    }
+
+    private var showLowSessionHint: Bool {
+        hotkeysEnabled && sessionCount < hotkeyMinimumSessions
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -26,14 +34,20 @@ struct SettingsView: View {
                 HotkeyRecorderField(binding: $nextHotkey, label: "next")
                     .frame(width: 160, height: 24)
             }
-            .opacity(hotkeysEnabled ? 1 : 0.4)
+            .opacity(effectivelyEnabled ? 1 : 0.4)
             HStack {
                 Text("Fenêtre précédente")
                 Spacer()
                 HotkeyRecorderField(binding: $prevHotkey, label: "prev")
                     .frame(width: 160, height: 24)
             }
-            .opacity(hotkeysEnabled ? 1 : 0.4)
+            .opacity(effectivelyEnabled ? 1 : 0.4)
+
+            if showLowSessionHint {
+                Text("Inactifs : lance au moins 2 clients Dofus.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
 
             Divider()
 
